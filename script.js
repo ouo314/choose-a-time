@@ -34,23 +34,14 @@ document.addEventListener('DOMContentLoaded', function () {
             select: function (info) {
                 const userName = userNameInput.value;
                 if (userName) {
-                    const isAvailable = confirm(`你在 ${info.startStr} 有空嗎？`);
-                    if (isAvailable) {
-                        calendar.addEvent({
-                            title: userName,
-                            start: info.startStr,
-                            end: info.endStr,
-                            allDay: true,
-                            color: 'green'
-                        });
-                    }
+                    calendar.addEvent({
+                        title: userName,
+                        start: info.startStr,
+                        end: info.endStr,
+                        allDay: true
+                    });
                 } else {
                     alert('請輸入您的名字');
-                }
-            },
-            eventClick: function (info) {
-                if (confirm('要刪除這個時間嗎？')) {
-                    info.event.remove();
                 }
             }
         });
