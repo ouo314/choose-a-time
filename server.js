@@ -25,8 +25,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/timesurvey', {
 
 const Survey = mongoose.model('Survey', {
     name: String,
-    users: Object,
-    events: Array
+    users: { type: Object, default: {} },  // 確保 users 有默認值
+    events: { type: Array, default: [] }
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -67,6 +67,9 @@ app.post('/api/surveys/join', async (req, res) => {
         const { surveyName, userName } = req.body;
         const survey = await Survey.findOne({ name: surveyName });
         if (survey) {
+            if (!survey.users) {
+                survey.users = {};
+            }
             survey.users[userName] = true;
             await survey.save();
             res.json(survey);
