@@ -6,7 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect('mongodb://localhost/timesurvey', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/timesurvey', { useNewUrlParser: true, useUnifiedTopology: true });
 
 const Survey = mongoose.model('Survey', {
     name: String,
