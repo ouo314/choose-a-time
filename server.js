@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 
 console.log('Starting server...');
 console.log('Node version:', process.version);
@@ -27,6 +28,8 @@ const Survey = mongoose.model('Survey', {
     users: Object,
     events: Array
 });
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/test', (req, res) => {
     res.json({ message: 'Server is running' });
