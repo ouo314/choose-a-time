@@ -16,15 +16,22 @@ document.addEventListener('DOMContentLoaded', function () {
     createSurveyBtn.addEventListener('click', createSurvey);
     joinSurveyBtn.addEventListener('click', joinSurvey);
 
-    function createSurvey() {
+    async function createSurvey() {
         const surveyName = surveyNameInput.value.trim();
         if (surveyName) {
-            if (surveys[surveyName]) {
-                alert('此調查名稱已存在，請使用其他名稱');
-            } else {
-                surveys[surveyName] = { users: {}, events: [] };
+            try {
+                const response = await fetch('http://localhost:3000/api/surveys', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: surveyName })
+                });
+                const data = await response.json();
+                surveys[surveyName] = data;
                 showSurveyInfo(surveyName);
                 initializeCalendar();
+            } catch (error) {
+                console.error('Error creating survey:', error);
+                alert('創建調查時出錯');
             }
         } else {
             alert('請輸入調查名稱');
@@ -42,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     surveys[surveyName].users[userName] = true;
                     currentSurveyName = surveyName;
                     currentUserName = userName;
-                    showSurveyInfo(surveyName);
+                    showSurveyInfo();
                     initializeCalendar();
                 }
             } else {
@@ -53,8 +60,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function showSurveyInfo(name) {
-        currentSurveyNameSpan.textContent = name;
+    function showSurveyInfo() {
+        currentSurveyNameSpan.textContent = currentSurveyName;
         currentUserNameSpan.textContent = currentUserName || '未登入';
         surveyInfo.style.display = 'block';
     }
