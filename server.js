@@ -9,7 +9,12 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/timesurvey', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/timesurvey', { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => {
+        console.error('Failed to connect to MongoDB:', err);
+        process.exit(1);
+    });
 
 const Survey = mongoose.model('Survey', {
     name: String,
@@ -48,6 +53,18 @@ app.post('/api/surveys/events', async (req, res) => {
     }
 });
 
+app.post('/api/surveys', async (req, res) => {
+    try {
+        const { name } = req.body;
+        const survey = new Survey({ name, users: {}, events: [] });
+        await survey.save();
+        res.json(survey);
+    } catch (error) {
+        console.error('Error creating survey:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.delete('/api/surveys/events', async (req, res) => {
     const { surveyName, event } = req.body;
     const survey = await Survey.findOne({ name: surveyName });
@@ -61,5 +78,3 @@ app.delete('/api/surveys/events', async (req, res) => {
         res.status(404).json({ error: 'Survey not found' });
     }
 });
-
-app.listen(3000, () => console.log('Server running on port 3000'));

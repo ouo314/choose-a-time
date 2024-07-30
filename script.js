@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const surveyName = surveyNameInput.value.trim();
         if (surveyName) {
             try {
-                const response = await fetch('http://localhost:3000/api/surveys', {
+                const response = await fetch(`${API_URL}/api/surveys`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: surveyName })
