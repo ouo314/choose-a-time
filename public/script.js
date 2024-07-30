@@ -39,22 +39,28 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function joinSurvey() {
+    async function joinSurvey() {
         const surveyName = joinSurveyNameInput.value.trim();
         const userName = userNameInput.value.trim();
         if (surveyName && userName) {
-            if (surveys[surveyName]) {
-                if (surveys[surveyName].users[userName]) {
-                    alert('此用戶名已在該調查中使用');
-                } else {
-                    surveys[surveyName].users[userName] = true;
-                    currentSurveyName = surveyName;
-                    currentUserName = userName;
-                    showSurveyInfo();
-                    initializeCalendar();
+            try {
+                const response = await fetch(`${API_URL}/api/surveys/join`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ surveyName, userName })
+                });
+                if (!response.ok) {
+                    throw new Error('Server response was not ok');
                 }
-            } else {
-                alert('找不到該調查');
+                const data = await response.json();
+                surveys[surveyName] = data;
+                currentSurveyName = surveyName;
+                currentUserName = userName;
+                showSurveyInfo();
+                initializeCalendar();
+            } catch (error) {
+                console.error('Error joining survey:', error);
+                alert('加入調查時出錯');
             }
         } else {
             alert('請輸入調查名稱和您的名字');
