@@ -14,6 +14,15 @@
 <body>
     <div id="app">
         <h1>時間調查</h1>
+        <div id="createSurvey">
+            <h2>創建新調查</h2>
+            <input type="text" id="surveyName" placeholder="輸入調查名稱">
+            <button id="createSurveyBtn">創建調查</button>
+        </div>
+        <div id="surveyInfo" style="display: none;">
+            <h2>調查識別碼：<span id="surveyId"></span></h2>
+            <input type="text" id="userName" placeholder="輸入您的名字">
+        </div>
         <div id="calendar"></div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
