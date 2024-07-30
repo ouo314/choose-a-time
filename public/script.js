@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let calendar;
     let currentSurveyName = null;
     let currentUserName = null;
-    let surveys = {};
 
     const createSurveyBtn = document.getElementById('createSurveyBtn');
     const joinSurveyBtn = document.getElementById('joinSurveyBtn');
@@ -113,16 +112,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function initializeCalendar() {
+    async function initializeCalendar() {
         const calendarEl = document.getElementById('calendar');
         calendarEl.style.display = 'block';
         const surveyInfo = await fetchSurveyInfo(currentSurveyName);
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             selectable: true,
-            select: function (info) {
+            select: async function (info) {
                 if (currentUserName) {
-                    const existingEvent = surveys[currentSurveyName].events.find(e =>
+                    const surveyInfo = await fetchSurveyInfo(currentSurveyName);
+                    const existingEvent = surveyInfo.events.find(e =>
                         e.title === currentUserName &&
                         e.start === info.startStr &&
                         e.end === info.endStr
@@ -136,20 +136,43 @@ document.addEventListener('DOMContentLoaded', function () {
                             end: info.endStr,
                             allDay: true
                         };
-                        calendar.addEvent(event);
-                        surveys[currentSurveyName].events.push(event);
+                        try {
+                            await fetch(`${API_URL}/api/surveys/events`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ surveyName: currentSurveyName, event })
+                            });
+                            calendar.addEvent(event);
+                        } catch (error) {
+                            console.error('Error adding event:', error);
+                            alert('添加事件時出錯');
+                        }
                     }
                 } else {
                     alert('請先加入調查');
                 }
             },
-            eventClick: function (info) {
+            eventClick: async function (info) {
                 if (info.event.title === currentUserName) {
                     if (confirm('要刪除這個時間嗎？')) {
-                        info.event.remove();
-                        surveys[currentSurveyName].events = surveys[currentSurveyName].events.filter(e =>
-                            !(e.title === currentUserName && e.start === info.event.startStr && e.end === info.event.endStr)
-                        );
+                        try {
+                            await fetch(`${API_URL}/api/surveys/events`, {
+                                method: 'DELETE',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    surveyName: currentSurveyName,
+                                    event: {
+                                        title: currentUserName,
+                                        start: info.event.startStr,
+                                        end: info.event.endStr
+                                    }
+                                })
+                            });
+                            info.event.remove();
+                        } catch (error) {
+                            console.error('Error deleting event:', error);
+                            alert('刪除事件時出錯');
+                        }
                     }
                 } else {
                     alert('您只能刪除自己標註的時間');
