@@ -35,6 +35,21 @@ app.get('/test', (req, res) => {
     res.json({ message: 'Server is running' });
 });
 
+app.get('/api/surveys/:surveyName', async (req, res) => {
+    try {
+        const { surveyName } = req.params;
+        const survey = await Survey.findOne({ name: surveyName });
+        if (survey) {
+            res.json(survey);
+        } else {
+            res.status(404).json({ error: 'Survey not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching survey:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.post('/api/surveys', async (req, res) => {
     try {
         const { name } = req.body;

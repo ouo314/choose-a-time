@@ -39,6 +39,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    async function fetchSurveyInfo(surveyName) {
+        try {
+            const response = await fetch(`${API_URL}/api/surveys/${surveyName}`);
+            if (!response.ok) {
+                throw new Error('Server response was not ok');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching survey info:', error);
+            alert('獲取調查信息時出錯');
+        }
+    }
+
     async function joinSurvey() {
         const surveyName = joinSurveyNameInput.value.trim();
         const userName = userNameInput.value.trim();
@@ -53,9 +66,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     throw new Error('Server response was not ok');
                 }
                 const data = await response.json();
-                surveys[surveyName] = data;
                 currentSurveyName = surveyName;
                 currentUserName = userName;
+                localStorage.setItem('currentSurveyName', surveyName);
+                localStorage.setItem('currentUserName', userName);
                 showSurveyInfo();
                 initializeCalendar();
             } catch (error) {
@@ -66,16 +80,43 @@ document.addEventListener('DOMContentLoaded', function () {
             alert('請輸入調查名稱和您的名字');
         }
     }
+    async function checkCurrentSurvey() {
+        currentSurveyName = localStorage.getItem('currentSurveyName');
+        currentUserName = localStorage.getItem('currentUserName');
+        if (currentSurveyName && currentUserName) {
+            try {
+                const surveyInfo = await fetchSurveyInfo(currentSurveyName);
+                if (surveyInfo.users[currentUserName]) {
+                    showSurveyInfo();
+                    initializeCalendar();
+                } else {
+                    localStorage.removeItem('currentSurveyName');
+                    localStorage.removeItem('currentUserName');
+                    currentSurveyName = null;
+                    currentUserName = null;
+                }
+            } catch (error) {
+                console.error('Error checking current survey:', error);
+            }
+        }
+    }
 
     function showSurveyInfo() {
-        currentSurveyNameSpan.textContent = currentSurveyName;
-        currentUserNameSpan.textContent = currentUserName || '未登入';
-        surveyInfo.style.display = 'block';
+        if (currentSurveyName && currentUserName) {
+            currentSurveyNameSpan.textContent = currentSurveyName;
+            currentUserNameSpan.textContent = currentUserName;
+            surveyInfo.style.display = 'block';
+        } else {
+            currentSurveyNameSpan.textContent = '未加入調查';
+            currentUserNameSpan.textContent = '未登入';
+            surveyInfo.style.display = 'block';
+        }
     }
 
     function initializeCalendar() {
         const calendarEl = document.getElementById('calendar');
         calendarEl.style.display = 'block';
+        const surveyInfo = await fetchSurveyInfo(currentSurveyName);
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             selectable: true,
@@ -114,8 +155,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     alert('您只能刪除自己標註的時間');
                 }
             },
-            events: surveys[currentSurveyName] ? surveys[currentSurveyName].events : []
+            events: surveyInfo.events
         });
         calendar.render();
     }
+
+    checkCurrentSurvey();
+
 });
