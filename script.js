@@ -1,49 +1,106 @@
 document.addEventListener('DOMContentLoaded', function () {
     let calendar;
-    let currentSurveyId = null;
+    let currentSurveyName = null;
+    let currentUserName = null;
+    let surveys = {};
 
     const createSurveyBtn = document.getElementById('createSurveyBtn');
+    const joinSurveyBtn = document.getElementById('joinSurveyBtn');
     const surveyNameInput = document.getElementById('surveyName');
-    const surveyInfo = document.getElementById('surveyInfo');
-    const surveyIdSpan = document.getElementById('surveyId');
+    const joinSurveyNameInput = document.getElementById('joinSurveyName');
     const userNameInput = document.getElementById('userName');
+    const surveyInfo = document.getElementById('surveyInfo');
+    const currentSurveyNameSpan = document.getElementById('currentSurveyName');
+    const currentUserNameSpan = document.getElementById('currentUserName');
 
     createSurveyBtn.addEventListener('click', createSurvey);
+    joinSurveyBtn.addEventListener('click', joinSurvey);
 
     function createSurvey() {
-        const surveyName = surveyNameInput.value;
+        const surveyName = surveyNameInput.value.trim();
         if (surveyName) {
-            currentSurveyId = generateUniqueId();
-            surveyIdSpan.textContent = currentSurveyId;
-            surveyInfo.style.display = 'block';
-            initializeCalendar();
+            if (surveys[surveyName]) {
+                alert('此調查名稱已存在，請使用其他名稱');
+            } else {
+                surveys[surveyName] = { users: {}, events: [] };
+                showSurveyInfo(surveyName);
+                initializeCalendar();
+            }
         } else {
             alert('請輸入調查名稱');
         }
     }
 
-    function generateUniqueId() {
-        return Math.random().toString(36).substr(2, 9);
+    function joinSurvey() {
+        const surveyName = joinSurveyNameInput.value.trim();
+        const userName = userNameInput.value.trim();
+        if (surveyName && userName) {
+            if (surveys[surveyName]) {
+                if (surveys[surveyName].users[userName]) {
+                    alert('此用戶名已在該調查中使用');
+                } else {
+                    surveys[surveyName].users[userName] = true;
+                    currentSurveyName = surveyName;
+                    currentUserName = userName;
+                    showSurveyInfo(surveyName);
+                    initializeCalendar();
+                }
+            } else {
+                alert('找不到該調查');
+            }
+        } else {
+            alert('請輸入調查名稱和您的名字');
+        }
+    }
+
+    function showSurveyInfo(name) {
+        currentSurveyNameSpan.textContent = name;
+        currentUserNameSpan.textContent = currentUserName || '未登入';
+        surveyInfo.style.display = 'block';
     }
 
     function initializeCalendar() {
         const calendarEl = document.getElementById('calendar');
+        calendarEl.style.display = 'block';
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             selectable: true,
             select: function (info) {
-                const userName = userNameInput.value;
-                if (userName) {
-                    calendar.addEvent({
-                        title: userName,
-                        start: info.startStr,
-                        end: info.endStr,
-                        allDay: true
-                    });
+                if (currentUserName) {
+                    const existingEvent = surveys[currentSurveyName].events.find(e =>
+                        e.title === currentUserName &&
+                        e.start === info.startStr &&
+                        e.end === info.endStr
+                    );
+                    if (existingEvent) {
+                        alert('您已經在此時間段標註過了');
+                    } else {
+                        const event = {
+                            title: currentUserName,
+                            start: info.startStr,
+                            end: info.endStr,
+                            allDay: true
+                        };
+                        calendar.addEvent(event);
+                        surveys[currentSurveyName].events.push(event);
+                    }
                 } else {
-                    alert('請輸入您的名字');
+                    alert('請先加入調查');
                 }
-            }
+            },
+            eventClick: function (info) {
+                if (info.event.title === currentUserName) {
+                    if (confirm('要刪除這個時間嗎？')) {
+                        info.event.remove();
+                        surveys[currentSurveyName].events = surveys[currentSurveyName].events.filter(e =>
+                            !(e.title === currentUserName && e.start === info.event.startStr && e.end === info.event.endStr)
+                        );
+                    }
+                } else {
+                    alert('您只能刪除自己標註的時間');
+                }
+            },
+            events: surveys[currentSurveyName] ? surveys[currentSurveyName].events : []
         });
         calendar.render();
     }
