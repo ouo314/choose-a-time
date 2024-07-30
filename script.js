@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const surveyInfo = document.getElementById('surveyInfo');
     const currentSurveyNameSpan = document.getElementById('currentSurveyName');
     const currentUserNameSpan = document.getElementById('currentUserName');
+    const API_URL = 'https://choose-a-time.onrender.com';
 
     createSurveyBtn.addEventListener('click', createSurvey);
     joinSurveyBtn.addEventListener('click', joinSurvey);
