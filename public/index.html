@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'nonce-random_nonce_value' 'unsafe-eval'; style-src 'self' https://cdn.jsdelivr.net;img-src 'self' data:; connect-src 'self' https://choose-a-time.onrender.com;">
+    <title>時間調查</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script nonce="random_nonce_value" src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
+    <script nonce="random_nonce_value" src="script.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <h1>時間調查</h1>
+        <div id="createSurvey">
+            <input type="text" id="surveyName" placeholder="輸入調查名稱">
+            <button id="createSurveyBtn">創建調查</button>
+        </div>
+        <div id="joinSurvey">
+            <input type="text" id="joinSurveyName" placeholder="輸入調查名稱">
+            <input type="text" id="userName" placeholder="輸入您的名字">
+            <button id="joinSurveyBtn">加入調查</button>
+        </div>
+        <div id="surveyInfo" style="display:none;">
+            <h2>調查名稱：<span id="currentSurveyName"></span></h2>
+            <h3>當前用戶：<span id="currentUserName"></span></h3>
+        </div>
+        <div id="calendar" style="display:none;"></div>
+    </div>
+</body>
+
+</html>
