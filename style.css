@@ -3,8 +3,20 @@ body {
     line-height: 1.6;
     margin: 0;
     padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+#app {
+    width: 80%;
+    max-width: 800px;
 }
 
 h1 {
-    color: #333;
+    color: rgb(0, 0, 0);
+    text-align: center;
+}
+
+#calendar {
+    margin-top: 20px;
 }
