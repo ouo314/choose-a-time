@@ -25,13 +25,23 @@ document.addEventListener('DOMContentLoaded', function () {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: surveyName })
                 });
+
                 const data = await response.json();
-                surveys[surveyName] = data;
-                showSurveyInfo(surveyName);
-                initializeCalendar();
+
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP error! status: ${response.status}`);
+                }
+
+                currentSurveyName = surveyName;
+                currentUserName = 'Creator';
+                localStorage.setItem('currentSurveyName', surveyName);
+                localStorage.setItem('currentUserName', currentUserName);
+                showSurveyInfo();
+                await initializeCalendar();
+                alert('調查創建成功！');
             } catch (error) {
                 console.error('Error creating survey:', error);
-                alert('創建調查時出錯');
+                alert('創建調查時出錯: ' + error.message);
             }
         } else {
             alert('請輸入調查名稱');

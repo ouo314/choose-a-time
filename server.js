@@ -53,12 +53,26 @@ app.get('/api/surveys/:surveyName', async (req, res) => {
 app.post('/api/surveys', async (req, res) => {
     try {
         const { name } = req.body;
+        console.log('Attempting to create survey:', name);
+
+        if (!name) {
+            console.log('Survey name is missing');
+            return res.status(400).json({ error: 'Survey name is required' });
+        }
+
+        const existingSurvey = await Survey.findOne({ name });
+        if (existingSurvey) {
+            console.log('Survey already exists:', name);
+            return res.status(409).json({ error: 'Survey with this name already exists' });
+        }
+
         const survey = new Survey({ name, users: {}, events: [] });
         await survey.save();
-        res.json(survey);
+        console.log('Survey created successfully:', survey);
+        res.status(201).json(survey);
     } catch (error) {
         console.error('Error creating survey:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 
