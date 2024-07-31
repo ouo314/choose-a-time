@@ -5,6 +5,8 @@ const path = require('path');
 
 console.log('Starting server...');
 console.log('Node version:', process.version);
+console.log('Joining survey:', { surveyName, userName });
+console.log('Found survey:', survey);
 
 const app = express();
 app.use(cors());
@@ -25,7 +27,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/timesurvey', {
 
 const Survey = mongoose.model('Survey', {
     name: String,
-    users: { type: Object, default: {} },  // 確保 users 有默認值
+    users: { type: Object, default: {} },
     events: { type: Array, default: [] }
 });
 
@@ -66,6 +68,9 @@ app.post('/api/surveys/join', async (req, res) => {
     try {
         const { surveyName, userName } = req.body;
         const survey = await Survey.findOne({ name: surveyName });
+        if (!surveyName || !userName) {
+            return res.status(400).json({ error: 'Survey name and user name are required' });
+        }
         if (survey) {
             if (!survey.users) {
                 survey.users = {};
