@@ -5,8 +5,6 @@ const path = require('path');
 
 console.log('Starting server...');
 console.log('Node version:', process.version);
-console.log('Joining survey:', { surveyName, userName });
-console.log('Found survey:', survey);
 
 const app = express();
 app.use(cors());
@@ -67,20 +65,24 @@ app.post('/api/surveys', async (req, res) => {
 app.post('/api/surveys/join', async (req, res) => {
     try {
         const { surveyName, userName } = req.body;
-        const survey = await Survey.findOne({ name: surveyName });
+        console.log('Joining survey:', { surveyName, userName });
+
         if (!surveyName || !userName) {
             return res.status(400).json({ error: 'Survey name and user name are required' });
         }
-        if (survey) {
-            if (!survey.users) {
-                survey.users = {};
-            }
-            survey.users[userName] = true;
-            await survey.save();
-            res.json(survey);
-        } else {
-            res.status(404).json({ error: 'Survey not found' });
+
+        const result = await Survey.updateOne(
+            { name: surveyName },
+            { $set: { [`users.${userName}`]: true } },
+            { upsert: true }
+        );
+
+        if (result.matchedCount === 0 && result.upsertedCount === 0) {
+            return res.status(404).json({ error: 'Survey not found' });
         }
+
+        const updatedSurvey = await Survey.findOne({ name: surveyName });
+        res.json(updatedSurvey);
     } catch (error) {
         console.error('Error joining survey:', error);
         res.status(500).json({ error: 'Internal server error' });
